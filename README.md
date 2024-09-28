@@ -1,7 +1,7 @@
 # Vite plugins
 
-If `addWatchFile()` is called by a Vite plugin after the server is closed,
-the watcher will be set, preventing Node.js process from exiting.
+If `addWatchFile()` is called by a Vite plugin after the server is closed, the
+watcher will be set, preventing Node.js process from exiting.
 
 For example, if vite:css was in the middle of transforming a file when the
 server is closed, vite:css may call `addWatchFile()` , which will hang the
@@ -47,21 +47,25 @@ These watchers in turn prevent the Node.js process from exiting, hanging it.
 
 Solutions:
 
-- Make `PluginContext.addWatchFile()` a noop after the watcher is closed
+- In `server.close()`,
+  [if there are pending requests](https://github.com/vitejs/vite/blob/0474550c9fe0b252536b8d1f5190b3aca8723b71/packages/vite/src/node/server/index.ts#L658),
+  after the requests are processed, close all watchers again if any were open.
+- OR Make `PluginContext.addWatchFile()` a noop after the watcher is closed
 - OR Add a check for watcher being closed before calling addWatchFile (error
   prone)
 
 ## Real-world example
 
-I am starting Vite dev server inside Vitest global setup file. (Vite dev server is used for Puppeteer)
+I am starting Vite dev server inside Vitest global setup file. (Vite dev server
+is used for Puppeteer)
 
 The Vite dev server is closed in the global teardown file.
 
 If some test fails, the teardown is called early, while Vite dev server might
 still be in the process of transforming a CSS file.
 
-The vite:css plugin may set a file watcher, prevent Vitest from exiting.
-Vitest prints this message:
+The vite:css plugin may set a file watcher, prevent Vitest from exiting. Vitest
+prints this message:
 
 ```
 close timed out after 10000ms
