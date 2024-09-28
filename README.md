@@ -31,8 +31,8 @@ process.
 
 4. See that the Node.js process does not exit after the server is closed
 
-   - Comment out line 27 and see that the server exists correctly as this way
-     the watcher is set before the server is closed.
+   - Comment out line 27 in `vite.config.ts` and see that the server exists
+     correctly as this way the watcher is set before the server is closed.
 
 ## Explanation of the issue
 
